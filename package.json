@@ -21,7 +21,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "2.1.1",
     "framer-motion": "11.18.0",
-    "lucide-react": "^0.471.1",
+    "lucide-react": "^0.471.2",
     "mini-svg-data-uri": "1.4.4",
     "react": "18.3.1",
     "react-dom": "18.3.1",
