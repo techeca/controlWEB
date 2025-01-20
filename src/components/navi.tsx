@@ -7,7 +7,7 @@ type NaveProps = {
 export default function Navi({ className }: NaveProps) {
 
     return (
-        <header className={`${className} sticky top-0 z-50`}>
+        <header className={`${className} sticky top-0 z-0`}>
             <nav className="relative">
                 {/* Blur*/}
                 <div className="absolute inset-0 bg-white/50 dark:bg-neutral-950/50 backdrop-blur-sm" aria-hidden="true" />

@@ -1,10 +1,11 @@
 import * as React from "react"
-import { AudioWaveform, BookOpen, Bot, Command, Frame, GalleryVerticalEnd, Map, PieChart, Settings2, SquareTerminal, ClockArrowUp, Clock9 } from "lucide-react"
+import { AudioWaveform, BookOpen, Bot, Command, Frame, GalleryVerticalEnd, Map, PieChart, Settings2, SquareTerminal, ClockArrowUp, Clock9, MonitorCog } from "lucide-react"
 import { NavMain } from "@/components/nav-main"
 import { NavProjects } from "@/components/nav-projects"
 import { NavUser } from "@/components/nav-user"
 import { TeamSwitcher } from "@/components/team-switcher"
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarRail } from "@/components/ui/sidebar"
+import { useAuth } from "@/contexts/AuthContext"
 
 // This is sample data.
 const data = {
@@ -136,17 +137,25 @@ const data = {
 */}
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const { user, routes } = useAuth();
+
+  const userData = {
+    name: user?.name || 'Usuario',
+    email: user?.email || 'correo@email.com',
+    avatar: user?.avatar || 'DUA',
+  };
+
   return (
     <Sidebar collapsible="icon" {...props}>
       {/*<SidebarHeader>
         <TeamSwitcher teams={data.teams} />
       </SidebarHeader>*/}
       <SidebarContent>
-        <NavMain items={data.navMain} />
+        <NavMain items={routes.items} />
         {/*<NavProjects projects={data.projects} />*/}
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={data.user} />
+        <NavUser user={userData} />
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>
