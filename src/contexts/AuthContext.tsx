@@ -1,3 +1,5 @@
+import { authRepository } from "@/repositories/authRepository";
+import { LucideIcon } from "lucide-react";
 import React, { createContext, useContext, useState } from "react";
 
 const AuthContext = createContext<Authsignature | null>(null);
@@ -8,6 +10,7 @@ type AuthProps = {
 
 type Authsignature = {
     user: User | null,
+    routes: Route,
     isAuthenticated: boolean,
     login: (userData: { rut: string; password: string }) => void;
     logout: () => void
@@ -16,25 +19,47 @@ type Authsignature = {
 interface User {
     rut: string;
     name?: string;
+    email?: string;
+    avatar?: string;
+    type: string;
 }
+
+interface Route {
+    items: {
+      title: string
+      url: string
+      icon?: string
+      isActive?: boolean
+      items?: {
+        title: string
+        url: string
+      }[]
+    }[]
+  }
 
 export function AuthProvider({ children }: AuthProps) {
     const [user, setUser] = useState<User | null>(null);
+    const [routes, setRoutes] = useState<Route>({items: []});
 
-    const login = ({ rut, password }: { rut: string; password: string }) => {
-        // Aquí es donde validas las credenciales, esto es solo un ejemplo
-        if (rut === "12345678" && password === "password123") {
-          setUser({ rut, name: "Usuario" }); // Asigna el usuario si las credenciales son correctas
-        } else {
-          throw new Error("Credenciales incorrectas");
+    const login = async ({ rut, password }: { rut: string; password: string }) => {
+        try {
+            const userData = await authRepository.login(rut, password);
+            setUser(userData.user);
+            setRoutes(userData.routes);
+        } catch (error) {
+            console.log(error);
+            throw new Error("Error al intentar iniciar sessión.")
         }
       };
-    const logout = () => setUser(null); // Simula cierre de sesión
+    const logout = () => {
+        setUser(null)
+        authRepository.logout(); //testear
+    };
 
     //const isAuthenticated = !!user;
 
     return (
-        <AuthContext.Provider value={{ user, isAuthenticated: !!user, login, logout }}>
+        <AuthContext.Provider value={{ user, isAuthenticated: !!user, login, logout, routes }}>
             {children}
         </AuthContext.Provider>
     );
