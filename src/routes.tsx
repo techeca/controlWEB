@@ -6,6 +6,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import NotFound from "./pages/NotFound";
 import Users from "./pages/Users";
 import Entrada from "./pages/Entrada";
+import Controls from "./pages/Controls";
 
 const routes = [
     {
@@ -27,6 +28,10 @@ const routes = [
             {
                 path: 'entrada',
                 element: <ProtectedRoute element={<Entrada />} />
+            },
+            {
+                path: 'controls',
+                element: <ProtectedRoute element={<Controls />} />
             },
             {
                 index: true,

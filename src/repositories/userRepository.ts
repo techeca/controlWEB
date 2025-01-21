@@ -11,7 +11,7 @@ export const userRepository = {
     return user;
   },
 
-  async createUser(userData: { name: string; email: string }) {
+  async createUser(userData: { nombre: string; segundoNombre: string; apellido: string; segundoApellido: string; cargo: string; tipo: string; correo: string; contrasena: string; rut: string }) {
     const newUser = await userService.createUser(userData);
     return newUser;
   },

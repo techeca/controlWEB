@@ -1,47 +1,107 @@
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card"
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Button } from "@/components/ui/button"
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { useState } from "react"
-import { ArrowLeft, Save, User } from "lucide-react"
+import { ArrowLeft, Save, User, TrendingUp } from "lucide-react"
 import { Table, TableBody, TableCaption, TableCell, TableFooter, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
+import { Bar, BarChart, CartesianGrid, XAxis } from "recharts"
+import { userRepository } from "@/repositories/userRepository"
+
+const chartData = [
+    { month: "Enero", asistencias: 186, inasistencias: 80 },
+    { month: "Febrero", asistencias: 305, inasistencias: 200 },
+    { month: "Marzo", asistencias: 237, inasistencias: 120 },
+    { month: "Abril", asistencias: 73, inasistencias: 190 },
+    { month: "Mayo", asistencias: 209, inasistencias: 130 },
+    { month: "Junio", asistencias: 214, inasistencias: 140 },
+    { month: "Julio", asistencias: 214, inasistencias: 140 },
+    { month: "Agosto", asistencias: 214, inasistencias: 140 },
+    { month: "Septiembre", asistencias: 214, inasistencias: 140 },
+    { month: "Octubre", asistencias: 214, inasistencias: 140 },
+    { month: "Noviembre", asistencias: 214, inasistencias: 140 },
+    { month: "Diciembre", asistencias: 214, inasistencias: 140 },
+]
+const chartConfig = {
+    asistencias: {
+        label: "Asistencia",
+        color: "hsl(var(--chart-1))",
+    },
+    inasistencias: {
+        label: "Inasistencia",
+        color: "hsl(var(--chart-2))",
+    },
+} satisfies ChartConfig
+
+const tiposPermitidos = ["ADMIN", "USER"] as const;
+
+// Expresión regular para validar mayúsculas, números y signos especiales
+const passwordRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).+$/;
 
 const formSchema = z.object({
     nombre: z.string().min(2, {
-        message: "Nombre must be at least 2 characters.",
+        message: "El nombre debe tener al menos 2 caracteres.",
+    }).max(16, {
+        message: "El nombre debe tener como máximo 16 caracteres.",
     }),
-    segundoNombre: z.string().min(2, {
-        message: "Segundo Nombre must be at least 2 characters.",
-    }),
+
+    segundoNombre: z.string()
+    //.min(2, {
+    //    message: "El segundo nombre debe tener al menos 2 caracteres.",
+    //}).max(20, {
+    //    message: "El segundo nombre debe tener máximo 20 caracteres."
+    //})
+    ,
+
     apellido: z.string().min(2, {
-        message: "Apellido must be at least 2 characters.",
+        message: "El apellido debe tener al menos 2 caracteres.",
+    }).max(20, {
+        message: "El apellido debe tener máximo 20 caracteres."
     }),
-    segundoApellido: z.string().min(2, {
-        message: "Segundo Apellido must be at least 2 characters.",
-    }),
+
+    segundoApellido: z.string()
+    //.min(2, {
+    //    message: "El segundo apellido debe tener al menos 2 caracteres.",
+    //}).max(20, {
+    //    message: "El segundo apellido debe tener máximo 20 caracteres."
+    //})
+    ,
+
     rut: z.string().min(2, {
-        message: "RUT must be at least 2 characters.",
+        message: "RUT debe tener mínimo 2 caracteres.",
     }),
-    correo: z.string().min(2, {
-        message: "RUT must be at least 2 characters.",
+
+    correo: z.string().email({ 
+        message: "Formato de correo inválido" 
     }),
-    tipo: z.string().min(2, {
-        message: "RUT must be at least 2 characters.",
+
+    tipo: z.enum(tiposPermitidos, {
+        message: "El tipo debe ser uno de los valores permitidos: ADMIN, USER.",
     }),
+
     cargo: z.string().min(2, {
-        message: "RUT must be at least 2 characters.",
+        message: "El cargo debe tener al menos 2 caracteres.",
     }),
-    password: z.string().min(2, {
-        message: "RUT must be at least 2 characters.",
+
+    contrasena: z.string().min(8, {
+        message: "La contraseña debe tener al menos 8 caracteres.",
+    }).regex(passwordRegex, {
+        message: "La contraseña debe tener al menos una letra mayúscula, un número y un signo especial.",
     }),
-    repassword: z.string().min(2, {
-        message: "RUT must be at least 2 characters.",
+
+    recontrasena: z.string().min(8, {
+        message: "La confirmación de la contraseña debe tener al menos 8 caracteres.",
     }),
-})
+    
+}).refine((data) => data.contrasena === data.recontrasena, {
+    message: "Las contraseñas no coinciden.",
+    path: ["recontrasena"], // El error se asignará al campo `repassword`
+});
 
 const users = [
     {
@@ -72,10 +132,10 @@ export default function Users() {
             segundoApellido: "",
             rut: "",
             correo: "",
-            tipo: "",
+            tipo: "USER",
             cargo: "",
-            password: "",
-            repassword: ""
+            contrasena: "",
+            recontrasena: ""
         },
     })
 
@@ -84,14 +144,20 @@ export default function Users() {
         // Do something with the form values.
         // ✅ This will be type-safe and validated.
         console.log(values)
+        userRepository.createUser(values)
+    }
+
+    function cleanForm(){
+        form.reset()
+        setSelection('selection')
     }
 
     return (
         <div className="h-full mx-12 md:mx-36">
 
             {selection === 'selection' &&
-                <div className="space-y-6">
-                    <div className="flex flex-wrap justify-center gap-6">
+                <div className="space-y-8">
+                    <div className="flex flex-wrap justify-start space-x-6">
                         <Card onClick={() => setSelection('new')} className="cursor-pointer">
                             <CardHeader>
                                 <CardTitle>Nuevo Usuario</CardTitle>
@@ -104,11 +170,12 @@ export default function Users() {
 
                         <Card>
                             <CardHeader>
-                                <CardTitle>Nuevo Usuario</CardTitle>
-                                <CardDescription>Rellena los campos del formulario</CardDescription>
+                                <CardTitle>Total Usuarios</CardTitle>
                             </CardHeader>
                             <CardContent>
-
+                                <h1 className="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl text-center">
+                                    02
+                                </h1>
                             </CardContent>
                         </Card>
 
@@ -125,7 +192,7 @@ export default function Users() {
 
                     <div>
                         <Table>
-                            <TableCaption>Lista de registros recientes.</TableCaption>
+                            <TableCaption>Lista de usuarios registrados recientemente.</TableCaption>
                             <TableHeader>
                                 <TableRow>
                                     <TableHead className="">Nombre</TableHead>
@@ -271,7 +338,7 @@ export default function Users() {
                                 </div>
 
                                 <div className="flex w-full gap-6">
-                                    <FormField control={form.control} name="password" render={({ field }) => (
+                                    <FormField control={form.control} name="contrasena" render={({ field }) => (
                                         <FormItem className="w-full">
                                             <FormLabel>Contraseña</FormLabel>
                                             <FormControl>
@@ -282,7 +349,7 @@ export default function Users() {
                                     )}
                                     />
 
-                                    <FormField control={form.control} name="repassword" render={({ field }) => (
+                                    <FormField control={form.control} name="recontrasena" render={({ field }) => (
                                         <FormItem className="w-full">
                                             <FormLabel>Repetir Contraseña</FormLabel>
                                             <FormControl>
@@ -296,7 +363,7 @@ export default function Users() {
 
                                 <div className="space-x-2">
                                     <Button type="submit"><Save /> Guardar</Button>
-                                    <Button type="submit" onClick={() => setSelection('selection')}><ArrowLeft /> Volver</Button>
+                                    <Button type="submit" onClick={() => cleanForm()}><ArrowLeft /> Volver</Button>
                                 </div>
                             </form>
                         </Form>

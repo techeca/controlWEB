@@ -1,6 +1,6 @@
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { useEffect, useState } from "react";
-import { Clock, ArrowBigLeftDash, ArrowBigRightDash } from "lucide-react";
+import { Clock, ArrowBigLeftDash, ArrowBigRightDash, BookOpenCheck, ClockArrowDown, ClockArrowUp } from "lucide-react";
 import { Table, TableBody, TableCaption, TableCell, TableFooter, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 
 const controls = [
@@ -41,7 +41,7 @@ export default function Entrada() {
 
     return (
         <div className="h-full mx-36 space-y-6">
-            <div>
+            <div className="flex gap-6">
                 <Card className="w-[200px] lg:w-[250px]">
                     <CardHeader>
                         <CardTitle className="flex items-center gap-3"><Clock />Hora</CardTitle>
@@ -53,6 +53,34 @@ export default function Entrada() {
                     </CardContent>
                     <CardFooter className="italic">
                         {formattedDate}
+                    </CardFooter>
+                </Card>
+
+                <Card className="w-[200px] lg:w-[250px]">
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-3"><ClockArrowDown/> Entradas</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <h1 className="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl text-center">
+                            02
+                        </h1>
+                    </CardContent>
+                    <CardFooter className="italic">
+                        Total de Entradas
+                    </CardFooter>
+                </Card>
+
+                <Card className="w-[200px] lg:w-[250px]">
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-3"><ClockArrowUp/> Salidas</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <h1 className="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl text-center">
+                            02
+                        </h1>
+                    </CardContent>
+                    <CardFooter className="italic">
+                        Total de Salidas
                     </CardFooter>
                 </Card>
             </div>

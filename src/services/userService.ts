@@ -9,8 +9,8 @@ export const userService = {
     return apiClient(`/users/${id}`);
   },
 
-  createUser: async (userData: { name: string; email: string }) => {
-    return apiClient("/users", {
+  createUser: async (userData: { nombre: string; segundoNombre: string; apellido: string; segundoApellido: string; cargo: string; tipo: string; correo: string; contrasena: string; rut: string }) => {
+    return apiClient("/user/create", {
       method: "POST",
       body: JSON.stringify(userData),
     });
