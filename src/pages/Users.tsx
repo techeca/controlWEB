@@ -7,7 +7,8 @@ import { Button } from "@/components/ui/button"
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { useState } from "react"
-import { ArrowLeft, Save } from "lucide-react"
+import { ArrowLeft, Save, User } from "lucide-react"
+import { Table, TableBody, TableCaption, TableCell, TableFooter, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 
 const formSchema = z.object({
     nombre: z.string().min(2, {
@@ -42,6 +43,23 @@ const formSchema = z.object({
     }),
 })
 
+const users = [
+    {
+        id: 1,
+        nombre: "Jim Vásquez",
+        rut: "18014220",
+        correo: "jvasquezc@pjud.cl",
+        cargo: "Administrativo Informático",
+    },
+    {
+        id: 2,
+        nombre: "Fernando Fabricio Vásquez Campusano",
+        rut: "18014220",
+        correo: "jvasquezc@pjud.cl",
+        cargo: "Administrativo Informático",
+    }
+]
+
 export default function Users() {
     const [selection, setSelection] = useState('selection');
     // 1. Define your form.
@@ -69,10 +87,10 @@ export default function Users() {
     }
 
     return (
-        <div className="h-full mx-36">
+        <div className="h-full mx-12 md:mx-36">
 
             {selection === 'selection' &&
-                <>
+                <div className="space-y-6">
                     <div className="flex flex-wrap justify-center gap-6">
                         <Card onClick={() => setSelection('new')} className="cursor-pointer">
                             <CardHeader>
@@ -94,7 +112,7 @@ export default function Users() {
                             </CardContent>
                         </Card>
 
-                        <Card>
+                        {/*<Card>
                             <CardHeader>
                                 <CardTitle>Nuevo Usuario</CardTitle>
                                 <CardDescription>Rellena los campos del formulario</CardDescription>
@@ -102,11 +120,41 @@ export default function Users() {
                             <CardContent>
 
                             </CardContent>
-                        </Card>
+                        </Card>*/}
                     </div>
 
-                    <div>s</div>
-                </>
+                    <div>
+                        <Table>
+                            <TableCaption>Lista de registros recientes.</TableCaption>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead className="">Nombre</TableHead>
+                                    <TableHead>RUT</TableHead>
+                                    <TableHead>Correo</TableHead>
+                                    <TableHead className="text-right">Cargo</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {users.map((user) => (
+                                    <TableRow key={user.id}>
+                                        <TableCell className="font-medium">{user.nombre}</TableCell>
+                                        <TableCell className="">{user.rut}</TableCell>
+                                        <TableCell>{user.correo}</TableCell>
+                                        <TableCell className="text-right">{user.cargo}</TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                            {/*
+                            <TableFooter>
+                                <TableRow>
+                                    <TableCell colSpan={3}>Total</TableCell>
+                                    <TableCell className="text-right">$2,500.00</TableCell>
+                                </TableRow>
+                            </TableFooter>
+                            */}
+                        </Table>
+                    </div>
+                </div>
             }
 
             {selection === 'new' &&
@@ -256,6 +304,11 @@ export default function Users() {
                 </Card>
             }
 
+            {
+                <div className="w-full">
+
+                </div>
+            }
 
         </div>
     )
