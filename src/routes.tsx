@@ -5,6 +5,7 @@ import Dashboard from "./pages/Dashboard";
 import ProtectedRoute from "./components/ProtectedRoute";
 import NotFound from "./pages/NotFound";
 import Users from "./pages/Users";
+import Entrada from "./pages/Entrada";
 
 const routes = [
     {
@@ -22,6 +23,10 @@ const routes = [
             {
                 path: 'users',
                 element: <ProtectedRoute element={<Users />} />
+            },
+            {
+                path: 'entrada',
+                element: <ProtectedRoute element={<Entrada />} />
             },
             {
                 index: true,
