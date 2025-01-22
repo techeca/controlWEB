@@ -1,6 +1,6 @@
-const BASE_URL = import.meta.env.VITE_API_URL;
 
 async function apiClient( endpoint: string, { method = "GET", body, headers = {} }: RequestInit & { body?: any; requiresAuth?: boolean } = {} ) {
+  const BASE_URL = import.meta.env.VITE_API_URL;
   const token = localStorage.getItem("token");
   const config: RequestInit = {
     method,
@@ -18,7 +18,7 @@ async function apiClient( endpoint: string, { method = "GET", body, headers = {}
 
   if (!response.ok) {
     const error = await response.json();
-    throw new Error(error.message || "Error en la API");
+    throw error.error.message || "Error en la API";
   }
 
   return response.json();

@@ -21,7 +21,7 @@ export const userRepository = {
     return updatedUser;
   },
 
-  async deleteUser(id: string) {
-    await userService.deleteUser(id);
+  async deleteUser(rut: string) {
+    await userService.deleteUser(rut);
   },
 };

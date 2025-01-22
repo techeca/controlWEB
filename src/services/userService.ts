@@ -2,7 +2,7 @@ import apiClient from "./apiClient";
 
 export const userService = {
   getUsers: async () => {
-    return apiClient("/users");
+    return apiClient("/user/all");
   },
 
   getUserById: async (id: string) => {
@@ -23,7 +23,7 @@ export const userService = {
     });
   },
 
-  deleteUser: async (id: string) => {
-    return apiClient(`/users/${id}`, { method: "DELETE" });
+  deleteUser: async (rut: string) => {
+    return apiClient(`/user/${rut}`, { method: "DELETE" });
   },
 };
