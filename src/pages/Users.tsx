@@ -6,37 +6,12 @@ import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrig
 import { Button } from "@/components/ui/button"
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
-import { useState } from "react"
-import { ArrowLeft, Save, User, TrendingUp } from "lucide-react"
+import { useEffect, useState } from "react"
+import { ArrowLeft, Save, User, TrendingUp, BadgeCheck, Eraser, Pencil } from "lucide-react"
 import { Table, TableBody, TableCaption, TableCell, TableFooter, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
-import { Bar, BarChart, CartesianGrid, XAxis } from "recharts"
 import { userRepository } from "@/repositories/userRepository"
-
-const chartData = [
-    { month: "Enero", asistencias: 186, inasistencias: 80 },
-    { month: "Febrero", asistencias: 305, inasistencias: 200 },
-    { month: "Marzo", asistencias: 237, inasistencias: 120 },
-    { month: "Abril", asistencias: 73, inasistencias: 190 },
-    { month: "Mayo", asistencias: 209, inasistencias: 130 },
-    { month: "Junio", asistencias: 214, inasistencias: 140 },
-    { month: "Julio", asistencias: 214, inasistencias: 140 },
-    { month: "Agosto", asistencias: 214, inasistencias: 140 },
-    { month: "Septiembre", asistencias: 214, inasistencias: 140 },
-    { month: "Octubre", asistencias: 214, inasistencias: 140 },
-    { month: "Noviembre", asistencias: 214, inasistencias: 140 },
-    { month: "Diciembre", asistencias: 214, inasistencias: 140 },
-]
-const chartConfig = {
-    asistencias: {
-        label: "Asistencia",
-        color: "hsl(var(--chart-1))",
-    },
-    inasistencias: {
-        label: "Inasistencia",
-        color: "hsl(var(--chart-2))",
-    },
-} satisfies ChartConfig
+import { toast } from "sonner"
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose } from "@/components/ui/dialog"
 
 const tiposPermitidos = ["ADMIN", "USER"] as const;
 
@@ -76,8 +51,8 @@ const formSchema = z.object({
         message: "RUT debe tener mínimo 2 caracteres.",
     }),
 
-    correo: z.string().email({ 
-        message: "Formato de correo inválido" 
+    correo: z.string().email({
+        message: "Formato de correo inválido"
     }),
 
     tipo: z.enum(tiposPermitidos, {
@@ -97,32 +72,27 @@ const formSchema = z.object({
     recontrasena: z.string().min(8, {
         message: "La confirmación de la contraseña debe tener al menos 8 caracteres.",
     }),
-    
+
 }).refine((data) => data.contrasena === data.recontrasena, {
     message: "Las contraseñas no coinciden.",
     path: ["recontrasena"], // El error se asignará al campo `repassword`
 });
 
-const users = [
-    {
-        id: 1,
-        nombre: "Jim Vásquez",
-        rut: "18014220",
-        correo: "jvasquezc@pjud.cl",
-        cargo: "Administrativo Informático",
-    },
-    {
-        id: 2,
-        nombre: "Fernando Fabricio Vásquez Campusano",
-        rut: "18014220",
-        correo: "jvasquezc@pjud.cl",
-        cargo: "Administrativo Informático",
-    }
-]
+interface User {
+    id: number;
+    name: string;
+    secondName: string;
+    lastName: string;
+    surName: string;
+    rut: string;
+    email: string;
+    cargo: string;
+}
 
 export default function Users() {
     const [selection, setSelection] = useState('selection');
-    // 1. Define your form.
+    const [users, setUsers] = useState<User[]>([])
+
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
@@ -139,18 +109,78 @@ export default function Users() {
         },
     })
 
-    // 2. Define a submit handler.
-    function onSubmit(values: z.infer<typeof formSchema>) {
+    async function onSubmit(values: z.infer<typeof formSchema>) {
         // Do something with the form values.
         // ✅ This will be type-safe and validated.
-        console.log(values)
-        userRepository.createUser(values)
+        try {
+            await userRepository.createUser(values)
+            form.reset()
+            toast("✅ Creación exitosa", {
+                description: "El usuario ha sido creado correctamente.",
+                action: {
+                    label: "Cerrar",
+                    onClick: () => {
+                        console.log("Cerrar Toast");
+                    }
+                }
+            })
+        } catch (error) {
+            toast("❌ Error", {
+                description: `${error}`,
+                action: {
+                    label: "Cerrar",
+                    onClick: () => {
+                        console.log("Cerrar Toast");
+                    }
+                }
+            })
+        }
     }
 
-    function cleanForm(){
+    function cleanForm() {
         form.reset()
         setSelection('selection')
     }
+
+    function cargarFormulario(user: User) {
+        setSelection('new')
+        form.setValue('nombre', user.name)
+    }
+
+    async function handleDeleteUser(rut: string) {
+        try {
+            await userRepository.deleteUser(rut)
+            toast("✅ Eliminación exitosa", {
+                description: "El usuario ha sido eliminado sin problemas.",
+            })
+        } catch (error) {
+            toast("❌ Error", {
+                description: `${error}`,
+            })
+        }
+    }
+
+    useEffect(() => {
+        const fetchUsers = async () => {
+            try {
+                const fetchedUsers = await userRepository.getAllUsers();
+                setUsers(fetchedUsers.result);
+            } catch (error) {
+                console.error("Error al cargar los usuarios:", error);
+                toast("❌ Error", {
+                    description: "No se pudieron cargar los usuarios.",
+                    action: {
+                        label: "Cerrar",
+                        onClick: () => {
+                            console.log("Cerrar Toast");
+                        }
+                    }
+                });
+            }
+        };
+
+        fetchUsers();
+    }, []); // Ejecuta solo al montar el componente
 
     return (
         <div className="h-full mx-12 md:mx-36">
@@ -174,7 +204,7 @@ export default function Users() {
                             </CardHeader>
                             <CardContent>
                                 <h1 className="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl text-center">
-                                    02
+                                    {users.length}
                                 </h1>
                             </CardContent>
                         </Card>
@@ -198,16 +228,46 @@ export default function Users() {
                                     <TableHead className="">Nombre</TableHead>
                                     <TableHead>RUT</TableHead>
                                     <TableHead>Correo</TableHead>
-                                    <TableHead className="text-right">Cargo</TableHead>
+                                    <TableHead className="">Cargo</TableHead>
+                                    <TableHead className="text-right">Acciones</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {users.map((user) => (
+                                {users.length > 0 && users.map((user) => (
                                     <TableRow key={user.id}>
-                                        <TableCell className="font-medium">{user.nombre}</TableCell>
+                                        <TableCell className="font-medium">{user.name} {user.secondName} {user.lastName} {user.surName}</TableCell>
                                         <TableCell className="">{user.rut}</TableCell>
-                                        <TableCell>{user.correo}</TableCell>
-                                        <TableCell className="text-right">{user.cargo}</TableCell>
+                                        <TableCell>{user.email}</TableCell>
+                                        <TableCell className="">{user.cargo}</TableCell>
+                                        <TableCell className="justify-end flex gap-3">
+                                            <Button variant="outline" onClick={() => cargarFormulario(user)}><Pencil className="cursor-pointer" /></Button>
+                                            <Dialog>
+                                                <DialogTrigger><Button variant="destructive"><Eraser className="cursor-pointer" /></Button></DialogTrigger>
+                                                <DialogContent>
+                                                    <DialogHeader>
+                                                        <DialogTitle>¿Deseas eliminar este usuario?</DialogTitle>
+                                                        <DialogDescription>
+                                                            Esta acción no puede ser revertida! <br />
+                                                            <p>Vas a eliminar la cuenta y los registros de <span className="font-bold">{user.name} {user.secondName} {user.lastName} {user.surName}</span></p>
+                                                        </DialogDescription>
+                                                    </DialogHeader>
+                                                    <DialogFooter className="sm:justify-end">
+                                                        <DialogClose asChild>
+                                                        <Button onClick={() => handleDeleteUser(user.rut)} type="button" variant="destructive">
+                                                            Eliminar
+                                                        </Button>
+                                                        </DialogClose>
+                                                        <DialogClose asChild>
+                                                            <Button type="button" variant="secondary">
+                                                                Cancelar
+                                                            </Button>
+                                                        </DialogClose>
+                                                    </DialogFooter>
+                                                </DialogContent>
+                                            </Dialog>
+
+
+                                        </TableCell>
                                     </TableRow>
                                 ))}
                             </TableBody>
