@@ -7,67 +7,6 @@ import { TeamSwitcher } from "@/components/team-switcher"
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarRail } from "@/components/ui/sidebar"
 import { useAuth } from "@/contexts/AuthContext"
 
-// This is sample data.
-const data = {
-  user: {
-    name: "shadcn",
-    email: "m@example.com",
-    avatar: "/avatars/shadcn.jpg",
-  },
-  teams: [
-    {
-      name: "Acme Inc",
-      logo: GalleryVerticalEnd,
-      plan: "Enterprise",
-    },
-    {
-      name: "Acme Corp.",
-      logo: AudioWaveform,
-      plan: "Startup",
-    },
-    {
-      name: "Evil Corp.",
-      logo: Command,
-      plan: "Free",
-    },
-  ],
-  navMain: [
-    {
-      title: "Reloj Control",
-      url: "#",
-      icon: Clock9,
-      isActive: true,
-      items: [
-        {
-          title: "Entrada",
-          url: "#",
-        },
-        {
-          title: "Salida",
-          url: "#",
-        }
-      ],
-    },
-  ],
-  projects: [
-    {
-      name: "Design Engineering",
-      url: "#",
-      icon: Frame,
-    },
-    {
-      name: "Sales & Marketing",
-      url: "#",
-      icon: PieChart,
-    },
-    {
-      name: "Travel",
-      url: "#",
-      icon: Map,
-    },
-  ],
-}
-
 {/* 
 {
       title: "Models",
@@ -141,6 +80,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
   const userData = {
     name: user?.name || 'Usuario',
+    lastName: user?.lastName || 'Anónimo',
     email: user?.email || 'correo@email.com',
     avatar: user?.avatar || 'DUA',
   };

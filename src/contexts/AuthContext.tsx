@@ -19,6 +19,7 @@ type Authsignature = {
 interface User {
     rut: string;
     name?: string;
+    lastName?: string;
     email?: string;
     avatar?: string;
     type: string;
