@@ -10,14 +10,14 @@ export const userService = {
   },
 
   createUser: async (userData: { nombre: string; segundoNombre: string; apellido: string; segundoApellido: string; cargo: string; tipo: string; correo: string; contrasena: string; rut: string }) => {
-    return apiClient("/user/create", {
+    return apiClient("/user/", {
       method: "POST",
       body: JSON.stringify(userData),
     });
   },
 
-  updateUser: async (id: string, userData: { name: string; email: string }) => {
-    return apiClient(`/users/${id}`, {
+  updateUser: async (rut: string, userData: Partial<{ nombre: string; segundoNombre: string; apellido: string; segundoApellido: string; cargo: string; tipo: string; correo: string; contrasena: string; }>) => {
+    return apiClient(`/user/${rut}`, {
       method: "PUT",
       body: JSON.stringify(userData),
     });

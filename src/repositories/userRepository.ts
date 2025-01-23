@@ -16,8 +16,8 @@ export const userRepository = {
     return newUser;
   },
 
-  async updateUser(id: string, userData: { name: string; email: string }) {
-    const updatedUser = await userService.updateUser(id, userData);
+  async updateUser(rut: string, userData: Partial<{ nombre: string; segundoNombre: string; apellido: string; segundoApellido: string; cargo: string; tipo: string; correo: string; contrasena: string; }>) {
+    const updatedUser = await userService.updateUser(rut, userData);
     return updatedUser;
   },
 
