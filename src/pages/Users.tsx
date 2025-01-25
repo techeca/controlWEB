@@ -67,7 +67,7 @@ export default function Users() {
             {selection === 'selection' &&
                 <div className="space-y-8">
                     <div className="flex flex-wrap justify-start space-x-6">
-                        <Card onClick={() => setSelection('new')} className="cursor-pointer">
+                        <Card onClick={() => setSelection('new')} className="cursor-pointer hover:bg-neutral-900">
                             <CardHeader>
                                 <CardTitle>Nuevo Usuario</CardTitle>
                                 <CardDescription>Agregar nuevo Usuario al sistema</CardDescription>
