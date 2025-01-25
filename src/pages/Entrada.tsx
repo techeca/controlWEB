@@ -1,7 +1,10 @@
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Clock, ArrowBigLeftDash, ArrowBigRightDash, BookOpenCheck, ClockArrowDown, ClockArrowUp } from "lucide-react";
 import { Table, TableBody, TableCaption, TableCell, TableFooter, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { useAuth } from "@/contexts/AuthContext";
+import { controlRepository } from "@/repositories/controlRepository";
+import { toast } from "sonner";
 
 const controls = [
     {
@@ -20,8 +23,16 @@ const controls = [
     }
 ]
 
+type ControlType = "ENTRADA" | "SALIDA";
+
+type Control = {}
+
 export default function Entrada() {
     const [currentTime, setCurrentTime] = useState(new Date());
+    const [allUserControls, setAllUserControls] = useState<any>([]);
+    const [todayEntrance, setTodayEntrance] = useState<boolean>(false);
+    const [todayExit, setTodayExit] = useState<boolean>(false);
+    const { user } = useAuth()
 
     useEffect(() => {
         const intervalId = setInterval(() => {
@@ -31,38 +42,137 @@ export default function Entrada() {
         return () => clearInterval(intervalId); // Limpiar el intervalo al desmontar el componente
     }, []);
 
-    const months = [
+    /*const months = [
         "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
         "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
-    ];
+    ];*/
 
-    const formattedDate = `${currentTime.getDate()} de ${months[currentTime.getMonth()]} de ${currentTime.getUTCFullYear()}`;
-    const formattedTime = `${currentTime.getHours().toString().padStart(2, '0')}:${currentTime.getMinutes().toString().padStart(2, '0')}:${currentTime.getSeconds().toString().padStart(2, '0')}`;
+    function generateFormattedDate(date: Date) {
+        const months = [
+            "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+            "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
+        ];
+        return `${date.getDate()} de ${months[date.getMonth()]} de ${date.getUTCFullYear()}`;
+    }
+
+    function generateFormattedTime(date: Date) {
+        return `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}:${date.getSeconds().toString().padStart(2, '0')}`;
+    }
+
+    //const formattedDate = `${currentTime.getDate()} de ${months[currentTime.getMonth()]} de ${currentTime.getUTCFullYear()}`;
+    //const formattedTime = `${currentTime.getHours().toString().padStart(2, '0')}:${currentTime.getMinutes().toString().padStart(2, '0')}:${currentTime.getSeconds().toString().padStart(2, '0')}`;
+
+    const fetchControls = useCallback(async () => {
+        try {
+            const { result } = await controlRepository.getControls();
+            setAllUserControls(result)
+
+            // Obtén la fecha de hoy
+            const today = new Date();
+            const startOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate()).toISOString();
+            const endOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1).toISOString();
+
+            // Filtrar los controles de la fecha actual
+            const todayControls = result.filter((control: any) => {
+                const controlDate = new Date(control.createdAt).toISOString();
+                return controlDate >= startOfToday && controlDate < endOfToday;
+            });
+
+            // Verificar si hay controles de "entrada" y "salida"
+            const hasEntrance = todayControls.some((control: any) => control.typeControl === 'ENTRADA');
+            const hasExit = todayControls.some((control: any) => control.typeControl === 'SALIDA');
+
+            // Establecer los estados
+            setTodayEntrance(hasEntrance);
+            setTodayExit(hasExit);
+            console.log(todayEntrance);
+            console.log(todayExit);
+
+
+        } catch (error) {
+            console.log(error);
+            toast("❌ Error", {
+                description: "Hubo un error al intentar obtener los controles.",
+                action: {
+                    label: "Cerrar",
+                    onClick: () => {
+                        console.log("Cerrar Toast");
+                    }
+                }
+            })
+        }
+    }, [])
+
+    async function addControl(type: ControlType) {
+        try {
+            const { result } = await controlRepository.createControl({ tipo: type })
+            //console.log(result);
+            if (type === "ENTRADA") {
+                toast("✅ Entrada Generada", {
+                    description: `Entrada realizada a las ${generateFormattedTime(new Date(result.createdAt))} hrs.`,
+                    action: {
+                        label: "Cerrar",
+                        onClick: () => {
+                            console.log("Cerrar Toast");
+                        }
+                    }
+                })
+                setTodayEntrance(true)
+            } else if (type === "SALIDA") {
+                toast("✅ Salida Generada", {
+                    description: `Salida realizada a las ${generateFormattedTime(new Date(result.createdAt))} hrs.`,
+                    action: {
+                        label: "Cerrar",
+                        onClick: () => {
+                            console.log("Cerrar Toast");
+                        }
+                    }
+                })
+                setTodayExit(true)
+            }
+            await fetchControls()
+        } catch (error) {
+            console.log(error);
+            toast("❌ Error", {
+                description: "Hubo un error al intentar generar la entrada.",
+                action: {
+                    label: "Cerrar",
+                    onClick: () => {
+                        console.log("Cerrar Toast");
+                    }
+                }
+            })
+        }
+    }
+
+    useEffect(() => {
+        fetchControls()
+    }, [fetchControls])
 
     return (
         <div className="h-full mx-36 space-y-6">
             <div className="flex gap-6">
-                <Card className="w-[200px] lg:w-[250px]">
+                <Card className="w-full">
                     <CardHeader>
                         <CardTitle className="flex items-center gap-3"><Clock />Hora</CardTitle>
                     </CardHeader>
                     <CardContent>
                         <h1 className="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl">
-                            {formattedTime}
+                            {generateFormattedTime(currentTime)}
                         </h1>
                     </CardContent>
                     <CardFooter className="italic">
-                        {formattedDate}
+                        {generateFormattedDate(currentTime)}
                     </CardFooter>
                 </Card>
 
-                <Card className="w-[200px] lg:w-[250px]">
+                <Card className="w-full">
                     <CardHeader>
-                        <CardTitle className="flex items-center gap-3"><ClockArrowDown/> Entradas</CardTitle>
+                        <CardTitle className="flex items-center gap-3"><ClockArrowDown /> Entradas</CardTitle>
                     </CardHeader>
                     <CardContent>
                         <h1 className="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl text-center">
-                            02
+                            {user?.controles.filter((control: any) => control.typeControl === 'ENTRADA').length}
                         </h1>
                     </CardContent>
                     <CardFooter className="italic">
@@ -70,13 +180,13 @@ export default function Entrada() {
                     </CardFooter>
                 </Card>
 
-                <Card className="w-[200px] lg:w-[250px]">
+                <Card className="w-full">
                     <CardHeader>
-                        <CardTitle className="flex items-center gap-3"><ClockArrowUp/> Salidas</CardTitle>
+                        <CardTitle className="flex items-center gap-3"><ClockArrowUp /> Salidas</CardTitle>
                     </CardHeader>
                     <CardContent>
                         <h1 className="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl text-center">
-                            02
+                            {user?.controles.filter((control: any) => control.typeControl === 'SALIDA').length}
                         </h1>
                     </CardContent>
                     <CardFooter className="italic">
@@ -85,9 +195,40 @@ export default function Entrada() {
                 </Card>
             </div>
 
+            <div className="flex gap-6">
+
+                <Card onClick={() => addControl("ENTRADA")} className={`${todayEntrance ? `cursor-not-allowed opacity-30` : `cursor-pointer hover:bg-neutral-900`} w-full flex flex-col items-center`}>
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-3">Marcar Entrada</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <h1 className="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl text-center">
+                            <ArrowBigRightDash size={64} color="#00b34d" />
+                        </h1>
+                    </CardContent>
+                    <CardFooter className="italic">
+                        Click para marcar
+                    </CardFooter>
+                </Card>
+
+                <Card onClick={() => addControl("SALIDA")} className={`${todayExit ? `cursor-not-allowed opacity-30` : `cursor-pointer hover:bg-neutral-900`} w-full flex flex-col items-center`}>
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-3">Marcar Salida</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <h1 className="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl text-center">
+                            <ArrowBigLeftDash size={64} color="#a20202" />
+                        </h1>
+                    </CardContent>
+                    <CardFooter className="italic">
+                        Click para marcar
+                    </CardFooter>
+                </Card>
+            </div>
+
             <div className="w-full">
                 <Table>
-                    <TableCaption>Lista de registros recientes.</TableCaption>
+                    <TableCaption>Lista de últimos registros ingresados.</TableCaption>
                     <TableHeader>
                         <TableRow>
                             <TableHead className="w-[100px]">Hora</TableHead>
@@ -97,12 +238,12 @@ export default function Entrada() {
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {controls.map((control) => (
+                        {allUserControls.length > 0 && allUserControls.sort((a: any, b: any) => b.id - a.id).map((control: any) => (
                             <TableRow key={control.id}>
-                                <TableCell className="font-medium">{control.hora}</TableCell>
-                                <TableCell className="flex">{control.tipo === 'Entrada' ? <ArrowBigRightDash color="#00b34d"/> : <ArrowBigLeftDash color="#a20202"/>} {control.tipo}</TableCell>
-                                <TableCell>{control.fecha}</TableCell>
-                                <TableCell className="text-right">{control.nombre}</TableCell>
+                                <TableCell className="font-medium">{generateFormattedTime(new Date(control.createdAt))}</TableCell>
+                                <TableCell className="flex">{control.typeControl === 'ENTRADA' ? <ArrowBigRightDash color="#00b34d" /> : <ArrowBigLeftDash color="#a20202" />} {control.tipo}</TableCell>
+                                <TableCell>{generateFormattedDate(new Date(control.createdAt))}</TableCell>
+                                <TableCell className="text-right">{user?.name} {user?.lastName} {user?.surName}</TableCell>
                             </TableRow>
                         ))}
                     </TableBody>
