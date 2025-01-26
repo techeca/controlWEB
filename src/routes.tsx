@@ -34,6 +34,10 @@ const routes = [
                 element: <ProtectedRoute element={<Controls />} />
             },
             {
+                path: 'historial',
+                element: <ProtectedRoute element={<Historial />} />
+            },
+            {
                 index: true,
                 element: <Navigate to='signIn' />
             },
