@@ -40,8 +40,6 @@ export default function Users() {
     const fetchUsers = useCallback(async () => {
         try {
             const fetchedUsers = await userRepository.getAllUsers();
-            console.log(fetchedUsers.result.sort((a: User, b: User) => b.id - a.id));
-            
             setUsers(fetchedUsers.result);
         } catch (error) {
             console.error("Error al cargar los usuarios:", error);

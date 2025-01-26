@@ -5,27 +5,9 @@ import { Table, TableBody, TableCaption, TableCell, TableFooter, TableHead, Tabl
 import { useAuth } from "@/contexts/AuthContext";
 import { controlRepository } from "@/repositories/controlRepository";
 import { toast } from "sonner";
-
-const controls = [
-    {
-        id: 1,
-        hora: "08:00:00",
-        tipo: "Entrada",
-        fecha: "20 de Enero de 2025",
-        nombre: "Jim Vásquez",
-    },
-    {
-        id: 2,
-        hora: "16:00:00",
-        tipo: "Salida",
-        fecha: "20 de Enero de 2025",
-        nombre: "Jim Vásquez",
-    }
-]
+import { generateFormattedDate, generateFormattedTime } from "@/lib/utils";
 
 type ControlType = "ENTRADA" | "SALIDA";
-
-type Control = {}
 
 export default function Entrada() {
     const [currentTime, setCurrentTime] = useState(new Date());
@@ -41,26 +23,6 @@ export default function Entrada() {
 
         return () => clearInterval(intervalId); // Limpiar el intervalo al desmontar el componente
     }, []);
-
-    /*const months = [
-        "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
-        "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
-    ];*/
-
-    function generateFormattedDate(date: Date) {
-        const months = [
-            "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
-            "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
-        ];
-        return `${date.getDate()} de ${months[date.getMonth()]} de ${date.getUTCFullYear()}`;
-    }
-
-    function generateFormattedTime(date: Date) {
-        return `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}:${date.getSeconds().toString().padStart(2, '0')}`;
-    }
-
-    //const formattedDate = `${currentTime.getDate()} de ${months[currentTime.getMonth()]} de ${currentTime.getUTCFullYear()}`;
-    //const formattedTime = `${currentTime.getHours().toString().padStart(2, '0')}:${currentTime.getMinutes().toString().padStart(2, '0')}:${currentTime.getSeconds().toString().padStart(2, '0')}`;
 
     const fetchControls = useCallback(async () => {
         try {
@@ -85,10 +47,6 @@ export default function Entrada() {
             // Establecer los estados
             setTodayEntrance(hasEntrance);
             setTodayExit(hasExit);
-            console.log(todayEntrance);
-            console.log(todayExit);
-
-
         } catch (error) {
             console.log(error);
             toast("❌ Error", {
@@ -104,9 +62,11 @@ export default function Entrada() {
     }, [])
 
     async function addControl(type: ControlType) {
-        try {
+        try {  
+            if(type === "ENTRADA" && todayEntrance) return false;
+            if(type === "SALIDA" && todayExit) return false;
+
             const { result } = await controlRepository.createControl({ tipo: type })
-            //console.log(result);
             if (type === "ENTRADA") {
                 toast("✅ Entrada Generada", {
                     description: `Entrada realizada a las ${generateFormattedTime(new Date(result.createdAt))} hrs.`,
@@ -118,6 +78,7 @@ export default function Entrada() {
                     }
                 })
                 setTodayEntrance(true)
+                await fetchControls()
             } else if (type === "SALIDA") {
                 toast("✅ Salida Generada", {
                     description: `Salida realizada a las ${generateFormattedTime(new Date(result.createdAt))} hrs.`,
@@ -129,8 +90,9 @@ export default function Entrada() {
                     }
                 })
                 setTodayExit(true)
+                await fetchControls()
             }
-            await fetchControls()
+            
         } catch (error) {
             console.log(error);
             toast("❌ Error", {
@@ -157,7 +119,7 @@ export default function Entrada() {
                         <CardTitle className="flex items-center gap-3"><Clock />Hora</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <h1 className="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl">
+                        <h1 className="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl text-center">
                             {generateFormattedTime(currentTime)}
                         </h1>
                     </CardContent>

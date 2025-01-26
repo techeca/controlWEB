@@ -20,7 +20,7 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
 
     try {
       await login({ rut, password }); // Llama a la función login del contexto
-      navigate("/dashboard");
+      navigate("/entrada");
     } catch (e) {
       setError("El RUT o la contraseña son incorrectos."); // Muestra un error si falla el login
     }
