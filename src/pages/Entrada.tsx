@@ -134,7 +134,7 @@ export default function Entrada() {
                     </CardHeader>
                     <CardContent>
                         <h1 className="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl text-center">
-                            {user?.controles.filter((control: any) => control.typeControl === 'ENTRADA').length}
+                            {allUserControls.filter((control: any) => control.typeControl === 'ENTRADA').length}
                         </h1>
                     </CardContent>
                     <CardFooter className="italic">
@@ -148,7 +148,7 @@ export default function Entrada() {
                     </CardHeader>
                     <CardContent>
                         <h1 className="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl text-center">
-                            {user?.controles.filter((control: any) => control.typeControl === 'SALIDA').length}
+                            {allUserControls.filter((control: any) => control.typeControl === 'SALIDA').length}
                         </h1>
                     </CardContent>
                     <CardFooter className="italic">
