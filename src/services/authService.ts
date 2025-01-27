@@ -15,4 +15,14 @@ export const authService = {
     getProfile: async () => {
         return apiClient("/auth/profile");
     },
+
+    refreshToken: async () => {
+        return apiClient("/auth/refresh", {
+            method: "POST",
+        })
+    },
+
+    validateToken: async () => {
+        return apiClient("/auth/validateToken")
+    }
 };

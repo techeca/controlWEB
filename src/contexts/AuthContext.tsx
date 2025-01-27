@@ -1,6 +1,7 @@
 import { authRepository } from "@/repositories/authRepository";
-import { LucideIcon } from "lucide-react";
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
+import apiClient from "@/services/apiClient";
+import { useNavigate } from "react-router-dom";
 
 const AuthContext = createContext<Authsignature | null>(null);
 
@@ -13,7 +14,8 @@ type Authsignature = {
     routes: Route,
     isAuthenticated: boolean,
     login: (userData: { rut: string; password: string }) => void;
-    logout: () => void
+    logout: () => void,
+    loading: boolean
 }
 
 interface User {
@@ -43,6 +45,7 @@ interface Route {
 export function AuthProvider({ children }: AuthProps) {
     const [user, setUser] = useState<User | null>(null);
     const [routes, setRoutes] = useState<Route>({items: []});
+    const [loading, setLoading] = useState(true);
 
     const login = async ({ rut, password }: { rut: string; password: string }) => {
         try {
@@ -55,14 +58,52 @@ export function AuthProvider({ children }: AuthProps) {
         }
       };
     const logout = () => {
-        setUser(null)
+        setUser(null);
+        localStorage.removeItem("token");
         authRepository.logout(); //testear
     };
+
+    useEffect(() => {
+        const validateSession = async () => {
+            const token = localStorage.getItem("token");
+            if (!token) {
+                setUser(null); // No hay token, desautenticar
+                setLoading(false);
+                //navigate("/signIn");
+              return;
+            }
+
+            try {
+                console.log('intentando revalidar porque hay token');
+                const { user, routes } = await authRepository.validateToken()
+                setUser(user);
+                setRoutes(routes);
+            } catch (error: any) {
+                if (error.status === 403) {
+                    try {
+                      const refreshResponse = await authRepository.refreshToken();
+                      localStorage.setItem("token", refreshResponse.token);
+                      await validateSession(); // Reintentar validación
+                    } catch {
+                        setUser(null); // Sin sesión
+                        setRoutes({items: []})
+                    }
+                  } else {
+                    setUser(null);
+                    setRoutes({items: []})
+                  }
+            } finally {
+                setLoading(false)
+            }
+          };
+        
+          validateSession();
+    }, []);
 
     //const isAuthenticated = !!user;
 
     return (
-        <AuthContext.Provider value={{ user, isAuthenticated: !!user, login, logout, routes }}>
+        <AuthContext.Provider value={{ user, isAuthenticated: !!user, login, logout, routes, loading }}>
             {children}
         </AuthContext.Provider>
     );
