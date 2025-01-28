@@ -52,19 +52,22 @@ export default function Configuracion() {
         },
     })
 
+    function setDefaultWeeksValues(week: any){
+        formDays.setValue('LUNES', week[0].isExcluded)
+        formDays.setValue('MARTES', week[1].isExcluded)
+        formDays.setValue('MIERCOLES', week[2].isExcluded)
+        formDays.setValue('JUEVES', week[3].isExcluded)
+        formDays.setValue('VIERNES', week[4].isExcluded)
+        formDays.setValue('SABADO', week[5].isExcluded)
+        formDays.setValue("DOMINGO", week[6].isExcluded)
+    }
+
     const fetchConfig = useCallback(async () => {
         const { result } = await configRepository.getConfig();
-
-        formDays.setValue('LUNES', result[0].isExcluded)
-        formDays.setValue('MARTES', result[1].isExcluded)
-        formDays.setValue('MIERCOLES', result[2].isExcluded)
-        formDays.setValue('JUEVES', result[3].isExcluded)
-        formDays.setValue('VIERNES', result[4].isExcluded)
-        formDays.setValue('SABADO', result[5].isExcluded)
-        formDays.setValue("DOMINGO", result[6].isExcluded)
-
-        setWeekDays(result)
-        console.log(result);
+        const orderResult = result.sort((a: any, b: any) => a.id - b.id)
+        
+        setDefaultWeeksValues(orderResult)
+        setWeekDays(orderResult)
     }, [configRepository])
 
     function onSubmit(data: z.infer<typeof FormSchema>) {
@@ -73,10 +76,18 @@ export default function Configuracion() {
         })
     }
 
-    function onSubmitDays(data: z.infer<typeof FormDaysSchema>) {
-        toast("✅ You submitted the following values:", {
-            description: JSON.stringify(data, null, 2),
-        })
+    async function onSubmitDays(data: z.infer<typeof FormDaysSchema>) {
+        try {
+            console.log(data);
+            const { result } = await configRepository.configDays(data);
+            //console.log(result);
+            
+            toast("✅ Días actualizados", {
+                description: "El turno de trabajo fue actualizado correctamente",
+            })
+        } catch (error) {
+            console.log(error);
+        }
     }
 
     useEffect(() => {
@@ -88,7 +99,7 @@ export default function Configuracion() {
             <div className="flex gap-6">
                 <Card className="w-full">
                     <CardHeader>
-                        <CardTitle className="flex items-center gap-3">Exclusión de sábados y domingos</CardTitle>
+                        <CardTitle className="flex items-center gap-3">Configuración de turno</CardTitle>
                         <CardDescription>Seleccionar día para no considerar</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-3">
