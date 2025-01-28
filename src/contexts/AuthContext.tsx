@@ -79,7 +79,9 @@ export function AuthProvider({ children }: AuthProps) {
                 setUser(user);
                 setRoutes(routes);
             } catch (error: any) {
-                if (error.status === 403) {
+                console.log('error en la validación de token');
+                console.log(error.status);
+                if (error.status === 403 || error.status === 401) {
                     try {
                       const refreshResponse = await authRepository.refreshToken();
                       localStorage.setItem("token", refreshResponse.token);
@@ -87,10 +89,12 @@ export function AuthProvider({ children }: AuthProps) {
                     } catch {
                         setUser(null); // Sin sesión
                         setRoutes({items: []})
+                        localStorage.removeItem('token')
                     }
                   } else {
-                    setUser(null);
-                    setRoutes({items: []})
+                    //setUser(null);
+                    //setRoutes({items: []})
+                    //localStorage.removeItem('token')
                   }
             } finally {
                 setLoading(false)

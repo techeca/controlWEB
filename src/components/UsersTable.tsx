@@ -28,7 +28,7 @@ export default function UsersTable({users, fnEdit, fnDelete}: {users: User[], fn
                         <TableCell className="justify-end flex gap-3">
                             <Button variant="outline" onClick={() => fnEdit(user)}><Pencil className="cursor-pointer" /></Button>
                             <Dialog>
-                                <DialogTrigger><Button variant="destructive"><Eraser className="cursor-pointer" /></Button></DialogTrigger>
+                                <DialogTrigger asChild><Button variant="destructive"><Eraser className="cursor-pointer" /></Button></DialogTrigger>
                                 <DialogContent>
                                     <DialogHeader>
                                         <DialogTitle>¿Deseas eliminar este usuario?</DialogTitle>

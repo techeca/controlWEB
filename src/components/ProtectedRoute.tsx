@@ -2,9 +2,7 @@ import { Navigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 
 const ProtectedRoute = ({ element }: { element: JSX.Element }) => {
-  const { isAuthenticated, user, loading } = useAuth();
-  console.log(isAuthenticated);
-  console.log(user);
+  const { isAuthenticated, loading } = useAuth();
 
   if (loading) {
     return <div>Cargando...</div>; // O un spinner
